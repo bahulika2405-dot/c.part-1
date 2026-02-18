@@ -1,31 +1,113 @@
+// Recipe Data
 const recipes = [
-    { id: 1, title: "Classic Spaghetti Carbonara", time: 25, difficulty: "easy", description: "Creamy pasta with eggs and cheese.", category: "pasta" },
-    { id: 2, title: "Chicken Tikka Masala", time: 45, difficulty: "medium", description: "Chicken in spiced tomato sauce.", category: "curry" },
-    { id: 3, title: "Homemade Croissants", time: 180, difficulty: "hard", description: "Buttery flaky French pastry.", category: "baking" },
-    { id: 4, title: "Greek Salad", time: 15, difficulty: "easy", description: "Fresh veggies with feta cheese.", category: "salad" },
-    { id: 5, title: "Beef Wellington", time: 120, difficulty: "hard", description: "Beef wrapped in puff pastry.", category: "meat" },
-    { id: 6, title: "Vegetable Stir Fry", time: 20, difficulty: "easy", description: "Mixed vegetables in sauce.", category: "vegetarian" },
-    { id: 7, title: "Pad Thai", time: 30, difficulty: "medium", description: "Thai noodles with peanuts.", category: "noodles" },
-    { id: 8, title: "Margherita Pizza", time: 60, difficulty: "medium", description: "Classic pizza with basil.", category: "pizza" }
+  { title: "Pasta Alfredo", difficulty: "easy", time: 20 },
+  { title: "Chicken Curry", difficulty: "medium", time: 45 },
+  { title: "Beef Steak", difficulty: "hard", time: 60 },
+  { title: "Grilled Sandwich", difficulty: "easy", time: 10 },
+  { title: "Veg Biryani", difficulty: "medium", time: 50 },
+  { title: "Chocolate Cake", difficulty: "hard", time: 70 },
+  { title: "Fruit Salad", difficulty: "easy", time: 15 },
+  { title: "Paneer Butter Masala", difficulty: "medium", time: 35 }
 ];
 
-const recipeContainer = document.querySelector('#recipe-container');
+// State
+let currentFilter = "all";
+let currentSort = "none";
 
-const createRecipeCard = (recipe) => {
-    return `
-        <div class="recipe-card">
-            <h3>${recipe.title}</h3>
-            <div class="recipe-meta">
-                <span>⏱️ ${recipe.time} min</span>
-                <span class="difficulty ${recipe.difficulty}">${recipe.difficulty}</span>
-            </div>
-            <p>${recipe.description}</p>
-        </div>
+// DOM Elements
+const recipeContainer = document.getElementById("recipe-container");
+const filterButtons = document.querySelectorAll("[data-filter]");
+const sortButtons = document.querySelectorAll("[data-sort]");
+
+// Render Recipes
+function renderRecipes(recipeList) {
+  recipeContainer.innerHTML = "";
+
+  recipeList.forEach(recipe => {
+    const card = document.createElement("div");
+    card.className = "recipe-card";
+
+    card.innerHTML = `
+      <h3>${recipe.title}</h3>
+      <p><strong>Difficulty:</strong> ${recipe.difficulty}</p>
+      <p><strong>Time:</strong> ${recipe.time} mins</p>
     `;
-};
 
-const renderRecipes = (recipesToRender) => {
-    recipeContainer.innerHTML = recipesToRender.map(createRecipeCard).join('');
-};
+    recipeContainer.appendChild(card);
+  });
+}
 
-renderRecipes(recipes);
+// Filter Functions (Pure)
+function filterRecipes(data, filter) {
+  switch (filter) {
+    case "easy":
+      return data.filter(r => r.difficulty === "easy");
+    case "medium":
+      return data.filter(r => r.difficulty === "medium");
+    case "hard":
+      return data.filter(r => r.difficulty === "hard");
+    case "quick":
+      return data.filter(r => r.time < 30);
+    default:
+      return data;
+  }
+}
+
+// Sort Functions (Pure)
+function sortRecipes(data, sortType) {
+  const copied = [...data];
+
+  switch (sortType) {
+    case "name":
+      return copied.sort((a, b) => a.title.localeCompare(b.title));
+    case "time":
+      return copied.sort((a, b) => a.time - b.time);
+    default:
+      return copied;
+  }
+}
+
+// Update Display (Main Flow)
+function updateDisplay() {
+  let result = filterRecipes(recipes, currentFilter);
+  result = sortRecipes(result, currentSort);
+  renderRecipes(result);
+}
+
+// Active Button UI
+function updateActiveButtons() {
+  filterButtons.forEach(btn => {
+    btn.classList.remove("active");
+    if (btn.dataset.filter === currentFilter) {
+      btn.classList.add("active");
+    }
+  });
+
+  sortButtons.forEach(btn => {
+    btn.classList.remove("active");
+    if (btn.dataset.sort === currentSort) {
+      btn.classList.add("active");
+    }
+  });
+}
+
+// Event Listeners
+filterButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    currentFilter = button.dataset.filter;
+    updateActiveButtons();
+    updateDisplay();
+  });
+});
+
+sortButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    currentSort = button.dataset.sort;
+    updateActiveButtons();
+    updateDisplay();
+  });
+});
+
+// Initial Load
+updateDisplay();
+updateActiveButtons();
